@@ -1,0 +1,19 @@
+# Standalone dependencies for working on this service alone.
+name: ecommerce-payment-service
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: payment_svc
+      POSTGRES_PASSWORD: payment_local_pw
+      POSTGRES_DB: payment_db
+    ports: ["5445:5432"]
+    volumes: ["payment-pg:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payment_svc -d payment_db"]
+      interval: 5s
+      retries: 20
+
+volumes:
+  payment-pg:

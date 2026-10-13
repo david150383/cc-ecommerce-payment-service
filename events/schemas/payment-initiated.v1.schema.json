@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.ecommerce.local/payment-service/payment-initiated.v1.schema.json",
+  "title": "PaymentInitiated v1",
+  "description": "A checkout session was created with the provider for the authoritative order amount.",
+  "x-message-kind": "event",
+  "x-producer": "ecommerce-payment-service",
+  "x-consumers": [],
+  "x-channel": "SNS payment-events",
+  "$ref": "envelope.v1.schema.json",
+  "properties": {
+    "messageKind": {
+      "const": "event"
+    },
+    "messageType": {
+      "const": "PaymentInitiated"
+    },
+    "messageVersion": {
+      "const": 1
+    },
+    "producer": {
+      "const": "ecommerce-payment-service"
+    },
+    "payload": {
+      "type": "object",
+      "required": [
+        "paymentId",
+        "orderId",
+        "customerId",
+        "amount",
+        "provider"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "paymentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "orderId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "customerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "amount": {
+          "type": "object",
+          "description": "Integer minor units + ISO 4217 currency. Never floating point.",
+          "required": [
+            "amountMinor",
+            "currency"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "amountMinor": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "currency": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$"
+            }
+          }
+        },
+        "provider": {
+          "enum": [
+            "mock",
+            "stripe",
+            "razorpay"
+          ]
+        }
+      }
+    }
+  }
+}
