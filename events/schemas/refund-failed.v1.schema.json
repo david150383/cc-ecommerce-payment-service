@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.ecommerce.local/payment-service/refund-failed.v1.schema.json",
   "title": "RefundFailed v1",
-  "description": "The provider rejected the refund, or it could not be confirmed after retries.",
+  "description": "The provider rejected the refund, it could not be confirmed after retries, or the payment was not refundable (wrong status or amount).",
   "x-message-kind": "event",
   "x-producer": "ecommerce-payment-service",
   "x-consumers": [
@@ -48,7 +48,8 @@
         "failureCode": {
           "enum": [
             "PROVIDER_REJECTED",
-            "UNCONFIRMED_AFTER_RETRIES"
+            "UNCONFIRMED_AFTER_RETRIES",
+            "NOT_REFUNDABLE"
           ]
         }
       }

@@ -3,7 +3,7 @@ dist
 coverage
 tests
 docs
-events
+events/examples
 .env
 .env.*
 .git
