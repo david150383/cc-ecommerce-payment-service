@@ -74,7 +74,8 @@ const EnvSchema = z
 export type Env = z.infer<typeof EnvSchema>;
 
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
-  const result = EnvSchema.safeParse(source);
+  // An empty variable means "not set" (Compose passes `KEY: ${KEY:-}` through as "").
+  const result = EnvSchema.safeParse(Object.fromEntries(Object.entries(source).filter(([, v]) => v !== "")));
   if (!result.success) {
     throw new Error(`Invalid environment configuration:\n${z.prettifyError(result.error)}`);
   }

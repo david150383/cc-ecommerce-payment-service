@@ -19,6 +19,7 @@ describe("loadEnv", () => {
     expect(() => loadEnv({ ...required, NODE_ENV: "production" })).toThrow(/mock is for local development only/);
     expect(() => loadEnv({ ...required, PAYMENT_PROVIDER: "stripe" })).toThrow(/requires STRIPE_SECRET_KEY/);
     expect(loadEnv({ ...required, PAYMENT_PROVIDER: "stripe", STRIPE_SECRET_KEY: "sk_test_x", STRIPE_WEBHOOK_SECRET: "whsec_x" }).PAYMENT_PROVIDER).toBe("stripe");
+    expect(loadEnv({ ...required, STRIPE_SECRET_KEY: "", STRIPE_WEBHOOK_SECRET: "" }).STRIPE_SECRET_KEY).toBeUndefined();
     const live = { ...required, PAYMENT_PROVIDER: "stripe", STRIPE_SECRET_KEY: "sk_live_x", STRIPE_WEBHOOK_SECRET: "whsec_x" };
     expect(() => loadEnv(live)).toThrow(/only accepted when NODE_ENV=production/);
     expect(loadEnv({ ...live, NODE_ENV: "production" }).STRIPE_SECRET_KEY).toBe("sk_live_x");
