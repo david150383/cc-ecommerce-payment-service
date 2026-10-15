@@ -10,7 +10,7 @@
     "ecommerce-notification-service"
   ],
   "x-channel": "SNS payment-events",
-  "$ref": "envelope.v1.schema.json",
+  "$ref": "../common/envelope.v1.schema.json",
   "properties": {
     "messageKind": {
       "const": "event"

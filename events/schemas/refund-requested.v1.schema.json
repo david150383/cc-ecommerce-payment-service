@@ -9,7 +9,7 @@
     "ecommerce-payment-service"
   ],
   "x-channel": "SQS payment-commands",
-  "$ref": "envelope.v1.schema.json",
+  "$ref": "../common/envelope.v1.schema.json",
   "properties": {
     "messageKind": {
       "const": "command"

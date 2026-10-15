@@ -1,0 +1,27 @@
+{
+  "source": "ecommerce-contracts",
+  "version": "v1.0.0",
+  "commit": "2820581f413c93db7ccd90c6411fe2d125736d1d",
+  "service": "payment-service",
+  "directories": [
+    "events/schemas",
+    "events/examples"
+  ],
+  "files": {
+    "events/examples/notification-requested.v1.json": "fa904ccf19d6f575a9b325fd515f9ec2f14732ed35c8424792617ea598b45ff8",
+    "events/examples/payment-failed.v1.json": "4cfd9183910e462e83875059c1b5a90889d9b7ac5f1ddae714a9af34e9a93666",
+    "events/examples/payment-initiated.v1.json": "89c4c514e6672fd9b9c5fdfc7a821925ebd551336822c12a388449c5e4d04411",
+    "events/examples/payment-succeeded.v1.json": "1643fb53322c920410b1a6e0921ce341fa878f9e3d9bd77769283214136e2cb3",
+    "events/examples/refund-failed.v1.json": "f205aaab9133bb27a1f679235087e4ec9277b30e959c14c6abe71e8f1ae71fc3",
+    "events/examples/refund-requested.v1.json": "5f0f652d9ceefa475df851fd9dc200e2239d838e8e70a8001b230226c5f3a5dd",
+    "events/examples/refund-succeeded.v1.json": "917eab363aa9560e7b83f3904219d212a9ea6013b2deb635a00eb500974d561a",
+    "events/schemas/envelope.v1.schema.json": "773577105e1a89528f466579fd827da24313ff0f6a8edcd248358a0163e53d5a",
+    "events/schemas/notification-requested.v1.schema.json": "427d06803368fd09cd5741591112ce7415ad5cb231b0ae3459f42aeb5d4675f2",
+    "events/schemas/payment-failed.v1.schema.json": "5c399aab236ab0189da71fb61be85eae3f54c28287e30611483c0488e29ff3dc",
+    "events/schemas/payment-initiated.v1.schema.json": "8dd8b33be271b586bfac2385a85b398f730724990fd3ecf4a2b33d4a2cd059c0",
+    "events/schemas/payment-succeeded.v1.schema.json": "b388c1863ffc3fb1eaee81d44d65282127a307ac89b462bd3016c922e0b396c2",
+    "events/schemas/refund-failed.v1.schema.json": "875d911eda1b5b99a5cb4ce33b1b6cf41e32f6d830643d212da63f62aa78bf45",
+    "events/schemas/refund-requested.v1.schema.json": "4409d706cc2abc7143a190a2d01514c9aa5150680574af8ab49149cd51568933",
+    "events/schemas/refund-succeeded.v1.schema.json": "039f2b62ba4dd561f564a7d8f620c4692a954f57bd342dde10a71f1d8c4d6454"
+  }
+}
