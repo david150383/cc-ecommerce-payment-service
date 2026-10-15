@@ -35,10 +35,22 @@
             "format": "uuid"
           },
           "status": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "SUCCEEDED",
+              "FAILED",
+              "EXPIRED",
+              "PARTIALLY_REFUNDED",
+              "REFUNDED"
+            ]
           },
           "provider": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "mock",
+              "stripe"
+            ]
           },
           "amount": {
             "$ref": "#/components/schemas/Money"
