@@ -337,6 +337,34 @@ export class PaymentService {
     return this.submitRefund(refund, meta);
   }
 
+  async findRefundByKey(idempotencyKey: string): Promise<Refund | null> {
+    const { rows } = await this.db.query(`SELECT * FROM refunds WHERE idempotency_key = $1`, [idempotencyKey]);
+    return rows[0] ? toRefund(rows[0]) : null;
+  }
+
+  /**
+   * Answers a duplicate refund command again with the refund's FINAL outcome, so a sender that re-sent
+   * (e.g. the saga after a timeout) is not left waiting. A PENDING refund gets its answer later, from the
+   * webhook or reconciliation. Consumers dedupe by state, so an extra copy is harmless.
+   */
+  async reemitRefundOutcome(refundId: string, meta: Meta): Promise<boolean> {
+    return transaction(this.db, async (c) => {
+      const { rows } = await c.query(`SELECT * FROM refunds WHERE id = $1`, [refundId]);
+      if (!rows[0]) return false;
+      const r = toRefund(rows[0]);
+      if (r.status === "PENDING") return false;
+      const { rows: pr } = await c.query(`SELECT * FROM payments WHERE id = $1`, [r.paymentId]);
+      const p = toPayment(pr[0]!);
+      if (r.status === "SUCCEEDED") {
+        await this.event(c, p, "RefundSucceeded", { refundId: r.id, paymentId: p.id, orderId: p.orderId, customerId: p.customerId, amount: this.money(r.amountMinor, p.currency) }, meta);
+      } else {
+        const failureCode = r.failureCode === "NOT_REFUNDABLE" || r.failureCode === "UNCONFIRMED_AFTER_RETRIES" ? r.failureCode : "PROVIDER_REJECTED";
+        await this.event(c, p, "RefundFailed", { refundId: r.id, paymentId: p.id, orderId: p.orderId, failureCode }, meta);
+      }
+      return true;
+    });
+  }
+
   /** Sends the refund to the provider (outside any transaction) and applies an immediate outcome. */
   private async submitRefund(refund: Refund, meta: Meta): Promise<Refund> {
     const payment = await this.get(refund.paymentId, null);

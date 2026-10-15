@@ -17,12 +17,20 @@ export class RefundCommandHandler implements CommandHandler {
   async handle(cmd: CommandEnvelope): Promise<void> {
     if (cmd.messageType !== "RefundRequested") throw new InvalidCommand(`no handler for ${cmd.messageType}`);
     const p = cmd.payload as { paymentId: string; orderId: string; amount: { amountMinor: number; currency: string }; reason: string };
+    const meta = { correlationId: cmd.correlationId, causationId: cmd.messageId };
+    const existing = await this.payments.findRefundByKey(cmd.idempotencyKey);
+    if (existing) {
+      // Duplicate (redelivered or re-sent): never a second refund, but answer again if it is final.
+      const answered = await this.payments.reemitRefundOutcome(existing.id, meta);
+      this.logger.info({ refundId: existing.id, status: existing.status, answered }, "duplicate refund command");
+      return;
+    }
     try {
       const refund = await this.payments.requestRefund(
         cmd.idempotencyKey,
         { paymentId: p.paymentId, amountMinor: BigInt(p.amount.amountMinor), reason: p.reason },
         cmd.producer,
-        { correlationId: cmd.correlationId, causationId: cmd.messageId },
+        meta,
       );
       this.logger.info({ refundId: refund.id, status: refund.status, paymentId: p.paymentId }, "refund requested");
     } catch (err) {

@@ -210,6 +210,39 @@ describe("refunds", () => {
     await waitFor(async () => ((await statusOf(payment.id)).status === "REFUNDED" ? true : undefined));
   });
 
+  it("a duplicate refund command after the outcome is ANSWERED again (same outcome, no second refund); while pending it waits", async () => {
+    const { order, payment } = await paid();
+    const handler = new RefundCommandHandler(ctx.payments, ctx.logger);
+    const cmd = (key: string, amountMinor = 117_764) => ({
+      messageId: newId(), messageKind: "command" as const, messageType: "RefundRequested", messageVersion: 1, producer: "ecommerce-saga-orchestrator",
+      correlationId: newId(), causationId: null, sagaId: newId(), idempotencyKey: key,
+      payload: { paymentId: payment.id, orderId: order.id, amount: { amountMinor, currency: "INR" }, reason: "CUSTOMER_REQUESTED" },
+    });
+    const count = async (t: string) => (await types()).filter((x) => x === t).length;
+
+    // Pending at the provider: a re-send must not answer yet (the webhook will).
+    const realRefund = ctx.mock.refund.bind(ctx.mock);
+    ctx.mock.refund = async () => { throw new Error("timeout"); };
+    await handler.handle(cmd("saga-1:refund"));
+    ctx.mock.refund = realRefund;
+    await handler.handle(cmd("saga-1:refund"));
+    expect(await count("RefundSucceeded")).toBe(0);
+
+    // Once final, every re-send answers again.
+    await ctx.db.query(`UPDATE refunds SET status = 'SUCCEEDED'`);
+    await handler.handle(cmd("saga-1:refund"));
+    await handler.handle(cmd("saga-1:refund"));
+    expect(await count("RefundSucceeded")).toBe(2);
+    expect((await outbox()).at(-1)!.envelope.payload).toMatchObject({ paymentId: payment.id, orderId: order.id, amount: { amountMinor: 117_764, currency: "INR" } });
+
+    // A failed refund is re-answered with its stored failure code.
+    await handler.handle(cmd("saga-2:refund", 999_999)); // more than was paid
+    await handler.handle(cmd("saga-2:refund", 999_999));
+    const failed = (await outbox()).filter((e) => e.type === "RefundFailed");
+    expect(failed.map((e) => e.envelope.payload.failureCode)).toEqual(["NOT_REFUNDABLE", "NOT_REFUNDABLE"]);
+    expect((await ctx.db.query(`SELECT count(*)::int AS n FROM refunds`)).rows[0].n).toBe(2);
+  });
+
   it("a refund webhook that overtakes storing the provider's refund id is still applied (matched by our id)", async () => {
     const { payment } = await paid();
     const realRefund = ctx.mock.refund.bind(ctx.mock);
